@@ -55,8 +55,8 @@ namespace FullCRUDImplementsWithJquery.Web
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                  name: "default",
+                  template: "{controller=Logins}/{action=Index}/{id?}");
             });
         }
     }

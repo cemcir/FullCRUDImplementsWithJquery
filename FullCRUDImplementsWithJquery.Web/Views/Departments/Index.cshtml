@@ -1,0 +1,292 @@
+﻿
+@model FullCRUDImplementationWithJquery.Core.RedirectWithError.RedirectWithErrorMessage;
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <script src="~/js/Form/form.js"></script>
+    <script src="~/js/Redirect/redirectToPage.js"></script>
+    <script src="~/js/Logins/index.js"></script>
+    <script src="~/js/Menu/navbarmenu.js"></script>
+    <script src="~/js/Message/errormessage.js"></script>
+    <script src="~/js/Message/successmessage.js"></script>
+    <script src="~/js/Departments/departmentindex.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/css/navbarmenu.css" />
+    <script>
+        //var departmentService = new DepartmentService(new DepartmentModel(), new Message());
+
+        function getByDepartmentName(unauthorized,errorcreated) {
+             $(document).ready(function () {
+
+                let url = "https://localhost:44386/departments/getdepartmentbyname?name=" + $("#DepartmentName").val();
+
+                let accesstoken = localStorage.getItem("token");
+
+                $.ajax({
+                    type: "GET",
+                    crossDomain: true,
+                    url: url,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", "Bearer " + accesstoken);
+                    },
+                    success: function (departments) {
+
+                        $("#loading").html("");
+
+                        var table = `
+                <div class="container" style="margin-top:3%">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Id</th>
+                            <th>Bölüm Adı</th>
+                            <th>Güncelle</th>
+                            <th>Sil</th>
+                        </tr>
+                </div>`;
+                        if (departments.length > 0) {
+                            $.each(departments, (key, val) => {
+                                table += `
+                            <tr>
+                                <td>${val.id}</td>
+                                <td>${val.departmentName}</td>
+                                <td>
+                                    <button value="${val.id}" class="btn btn-warning" onclick="getByDepartmentId(this.value,'@Model.ErrorMessageCode.Unauthorized','@Model.ErrorMessageCode.ErrorCreated','@Model.RedirectToPage.Url','@Model.RedirectToPage.Time')">
+                                    <span class="glyphicon glyphicon-edit">
+                                    </span>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button value="${val.id}" onclick="" class="btn btn-danger">
+                                        <span class="glyphicon glyphicon-trash">
+                                        </span>
+                                    </button>
+                                </td>
+                            </tr>`
+                            })
+                            table += "</table>";
+                            $("#departmentList").html(table);
+                        }
+                        else {
+                            var emtyTable = `
+                    <div class="container" style="margin-top:3%">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Id</th>
+                            <th>Bölüm Adı</th>
+                            <th>Güncelle</th>
+                            <th>Sil</th>
+                        </tr>
+                        <tr>
+                            <td>Sonuç Bulunamadı</td>
+                        </tr>
+                    </div>`;
+                            $("#departmentList").html(emtyTable);
+                        }
+                    },
+                    error: function (error) {
+                        $("#loading").html("");
+                        if (error.status == unauthorized) {
+                            errorMessageWithoutButton("Lütfen Sisteme Güvenli Giriş Yapınız!", "Giriş Sayfasına Yönlendiriliyorsunuz!");
+                            redirectToPage('@Model.RedirectToPage.Url','@Model.RedirectToPage.Time');
+                        }
+                        else if (error.responseJSON == errorcreated) {
+                            swal({
+                                title: "Hata Oluştu!",
+                                text: "Veriler Getirilirken Bir Hata Meydana Geldi Lütfen Daha Sonra Tekrar Deneyiniz",
+                                icon: "error",
+                            });
+                        }
+                    },
+                    dataType: "json"
+                });
+            }); 
+        };  
+    </script>
+</head>
+<body>
+    <script>
+        
+        $(document).ready(function () {
+            /*
+            $(document).ajaxStart(function () {
+                $("#loading").html("Loading....");
+            });
+            */
+            let url = "https://localhost:44386/departments/getdepartmentlist";
+            let accesstoken = localStorage.getItem("token");
+
+            $.ajax({
+                type: "GET",
+                crossDomain: true,
+                url: url,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + accesstoken);
+                },
+                success: function (departments) {
+                    $("#loading").html("");
+                    navbarMenu();
+
+                    const pageIcons = `
+                <div class="container" style="margin-top:4%">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-info" onclick="addNewDepartment()">
+                                Bölüm Ekle
+                            </button>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="DepartmentName" onkeyup="getByDepartmentName('@Model.ErrorMessageCode.Unauthorized','@Model.ErrorMessageCode.ErrorCreated')" 
+                     class="pull-right"/>
+                            <label class="pull-right">
+                                Bölüm Adı:
+                            </label>
+                        </div>
+                    </div>
+                </div>`;
+                        var table = `
+                <div class="container" style="margin-top:3%">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Id</th>
+                            <th>Bölüm Adı</th>
+                            <th>Güncelle</th>
+                            <th>Sil</th>
+                        </tr>
+                </div>`;
+                        if (departments.length > 0) {
+                            $.each(departments, (key, val) => {
+                                table += `
+                            <tr>
+                                <td>${val.id}</td>
+                                <td>${val.departmentName}</td>
+                                <td>
+                                    <button value="${val.id}" class="btn btn-warning" onclick="getByDepartmentId(this.value,'@Model.ErrorMessageCode.Unauthorized','@Model.ErrorMessageCode.ErrorCreated','@Model.RedirectToPage.Url',@Model.RedirectToPage.Time)">
+                                    <span class="glyphicon glyphicon-edit">
+                                    </span>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button value="${val.id}" onclick="" class="btn btn-danger">
+                                        <span class="glyphicon glyphicon-trash">
+                                        </span>
+                                    </button>
+                                </td>
+                            </tr>`
+                            })
+                            table += "</table>";
+                            $("#pageIcons").html(pageIcons);
+                            $("#departmentList").html(table);
+                        }
+                        else {
+                            var emtyTable = `
+                    <div class="container" style="margin-top:3%">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Id</th>
+                            <th>Bölüm Adı</th>
+                            <th>Güncelle</th>
+                            <th>Sil</th>
+                        </tr>
+                        <tr>
+                            <td>Sonuç Bulunamadı</td>
+                        </tr>
+                    </div>`;
+                            $("#pageIcons").html(pageIcons);
+                            $("#departmentList").html(emtyTable);
+                        }
+                    },
+                    error: function (error) {
+
+                     $("#loading").html("");
+                     if (error.status == @Model.ErrorMessageCode.Unauthorized) {
+                            errorMessageWithoutButton("Lütfen Sisteme Güvenli Giriş Yapınız", "Giriş Sayfasına Yönlendiriliyorsunuz");
+                            redirectToPage('@Model.RedirectToPage.Url','@Model.RedirectToPage.Time');
+                        }
+                        else if (error.responseJSON == @Model.ErrorMessageCode.ErrorCreated) {
+                            errorMessageWithoutButton
+                                ("Hata Oluştu", "Veriler Getirilirken Bir Hata Meydana Geldi Giriş Sayfasına Yönlendiriliyorsunuz Lütfen Daha Sonra Tekrar Deneyiniz");
+                            localStorage.setItem("token", null);
+                            redirectToPage('@Model.RedirectToPage.Url','@Model.RedirectToPage.Time');
+                        }
+                    },
+                dataType: "json"
+            });
+        });
+        
+    </script>
+    <div id="loading" style="color:red"></div>
+    <div id="navbarMenu"></div>
+    <div id="pageIcons"></div>
+    <div id="departmentList"></div>
+
+    <div class="modal fade" id="ShowModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4>Kayıt Formu</h4>
+                    <div class="modal-body">
+                        <form id="form">
+                            <div class="form-group">
+                                <input type="hidden" id="Id" value="0" />
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="Name" placeholder="Bölüm Adı" />
+                            </div>
+                            <div class="box-footer">
+                                <button type="button" onclick="addDepartment('@Model.ErrorMessageCode.Unauthorized','@Model.ErrorMessageCode.ErrorCreated','@Model.ErrorMessageCode.AlreadyExistEntity','@Model.RedirectToPage.Url','@Model.RedirectToPage.Time')" class="btn btn-primary pull-left">
+                                    <i class="fa fa-save"></i> Kaydet
+                                </button>
+                                <button type="button" class="btn btn-default pull-right" onclick="resetForm()">
+                                    Formu Temizle
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ShowUpdateModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4>Kayıt Formu</h4>
+                    <div class="modal-body">
+                        <form id="form">
+                            <div class="form-group">
+                                <input type="hidden" id="DepartmentId" value="0" />
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="DepartName" placeholder="Bölüm Adı" />
+                            </div>
+                            <div class="box-footer">
+                                <button type="button" onclick="editDepartment('@Model.ErrorMessageCode.Unauthorized','@Model.ErrorMessageCode.ErrorCreated','@Model.RedirectToPage.Url','@Model.RedirectToPage.Time')" class="btn btn-primary pull-left">
+                                    <i class="fa fa-save"></i> Güncelle
+                                </button>
+                                <button type="button" class="btn btn-default pull-right" data-dismiss="modal">
+                                    İptal Et
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
