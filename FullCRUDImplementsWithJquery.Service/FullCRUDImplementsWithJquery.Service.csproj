@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FullCRUDImplementsWithJquery.Core\FullCRUDImplementsWithJquery.Core.csproj" />
+    <ProjectReference Include="..\FullCRUDImplementsWithJquery.Data\FullCRUDImplementsWithJquery.Data.csproj" />
+  </ItemGroup>
+
+</Project>
